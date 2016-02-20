@@ -23,15 +23,15 @@ object Main {
     val rangesIO = Try { lines(Source.fromURL(getClass.getResource("/ranges.tsv"))) }
     val transactionsIO = Try { lines(Source.fromURL(getClass.getResource("/transactions.tsv"))) }
 
-    // read, parse an IP, make ranges and segments
+    // read, parse an IP, create ranges and segments
     val segmentsTry = for { stream <- rangesIO }
       yield mkSegments(stream)
 
-    // read, parse user Id, make transactions
+    // read, parse user Id, create transactions
     val transactionsTry = for { stream <- transactionsIO }
       yield mkTransactions(stream)
 
-    // generation of the required information (userId -> seq of segment's name)
+    // generate required information (user Id -> seq of segment's name)
     val dataTry = for {
       segments <- segmentsTry
       transactions <- transactionsTry
@@ -52,11 +52,13 @@ object Main {
     }
 
     // errors
-    List(segmentsTry, transactionsTry, dataTry, writerTry)
-      .distinct.filter(_.isFailure) match {
-      case Nil => println("Program successfully finished without errors.")
-      case list => list.foreach(println)
+    val last = List(segmentsTry, transactionsTry, writerTry).distinct
+      .filter(_.isFailure) match {
+      case Nil => List("Program successfully finished without errors.")
+      case list => List("Program finished with errors:") ::: list.map(_.toString)
     }
+
+    last.foreach(println)
   }
 
   /** Creates an [[by.scalalab.ip.IPAddress]] from any [[String]]. */

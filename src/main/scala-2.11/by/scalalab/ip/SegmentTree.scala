@@ -52,7 +52,8 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
   }
 
   // recursively create leafs
-  val (leftNode, rightNode) = SegmentTree(left) -> SegmentTree(right)
+  lazy val leftNode = SegmentTree(left)
+  lazy val rightNode = SegmentTree(right)
 
   override def segments(ip: IPAddress): Seq[Segment] = {
     // all segments from the beginning of the sorted set to ip
@@ -65,8 +66,8 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
   }
 
   private def median(segments: Seq[Segment]): IPAddress = {
-    val mo = segments.splitAt(segments.size / 2)._2.headOption
-    val m = for {s <- mo} yield s.range.ip1
+    val r = segments.map(_.range).sorted.splitAt(segments.size / 2)._2.headOption
+    val m = for {range <- r} yield range.ip1
     m getOrElse IPAddress(0, 0, 0, 0)
   }
 }
