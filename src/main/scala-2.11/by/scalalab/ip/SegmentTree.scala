@@ -65,8 +65,8 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
   }
 
   private def median(segments: Seq[Segment]): IPAddress = {
-    val mo = segments.map(_.range).sorted.splitAt(segments.size / 2)._2.headOption
-    val m = for {s <- mo} yield s.ip1
+    val mo = segments.splitAt(segments.size / 2)._2.headOption
+    val m = for {s <- mo} yield s.range.ip1
     m getOrElse IPAddress(0, 0, 0, 0)
   }
 }
