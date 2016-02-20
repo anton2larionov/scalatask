@@ -87,11 +87,11 @@ class MainTest extends FunSuite {
     val data1 = Main.mkData(segments, transactions)
 
     assert(data1.contains((123L, Seq("Nw0", "Nw1"))))
-    assert(data1.contains((-951L, Seq("Unknown"))))
+    assert(data1.contains((951L, Seq("Unknown"))))
 
     val data2 = Main.mkData(segments, transactions, "NetworkZ")
 
-    assert(data2.contains((-951L, Seq("NetworkZ"))))
+    assert(data2.contains((951L, Seq("NetworkZ"))))
   }
 
 }
