@@ -1,0 +1,1 @@
+#### Scala Lab - Home task.
