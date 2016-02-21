@@ -46,11 +46,11 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
 
   // dividing all the 'segments' in half at 'mid'
   // 'center' overlapping 'mid'
-  segments.par.foreach(s => {
-    if (s.range.ip2 < mid) left.synchronized(left +:= s)
-    else if (s.range.ip1 > mid) right.synchronized(right +:= s)
-    else center.synchronized(center +:= s)
-  })
+  for(s <- segments) {
+    if (s.range.ip2 < mid) left +:= s
+    else if (s.range.ip1 > mid) right +:= s
+    else center +:= s
+  }
 
   val leftNode = SegmentTree(left)   // node containing all segments completely to the left of the 'mid'
   val rightNode = SegmentTree(right) // node containing all segments completely to the right of the 'mid'

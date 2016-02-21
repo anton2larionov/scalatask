@@ -12,24 +12,24 @@ class SegmentTreeTest extends FunSuite {
 
   test("testApply") {
     assert(SegmentTree(Seq()).segments(IPAddress(127, 0, 0, 1)).isEmpty)
-    assert(SegmentTree(null).segments(IPAddress(127, 0, 0, 1)).isEmpty)
   }
 
   test("testSegmentsWithGen") {
 
-    def num1 = Random.nextInt(255)
-
-    val segments = GenSegments.get(1000, 100000)
+    val num = Random.nextInt(255)
+    val segments = GenSegments.get(1000, 10000)
     val tree = SegmentTree(segments)
 
-    val ip = IPAddress(num1, num1, num1, num1)
+    for {c1 <- 0 to 255} {
+      val ip = IPAddress(c1, num, num, num)
 
-    val seqTree = tree.segments(ip).map(_.name).distinct
-    val seqPar = segments.par.filter(_.range.contains(ip)).map(_.name).distinct.seq
+      val seqTree = tree.segments(ip).map(_.name).distinct
+      val seqPar = segments.par.filter(_.range.contains(ip)).seq.map(_.name).distinct
 
-    assert(seqPar.size == seqTree.size)
+      assert(seqPar.size == seqTree.size)
 
-    for { name <- seqTree } assert(seqPar.contains(name))
+      for { name <- seqTree } assert(seqPar.contains(name))
+    }
   }
 
   test("testSegments") {
