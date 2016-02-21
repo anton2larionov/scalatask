@@ -52,18 +52,18 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
     else center.synchronized(center +:= s)
   })
 
-  val leftNode = SegmentTree(left) // node containing all intervals completely to the left of the center
-  val rightNode = SegmentTree(right) // node containing all intervals completely to the right of the center point
+  val leftNode = SegmentTree(left)   // node containing all segments completely to the left of the 'mid'
+  val rightNode = SegmentTree(right) // node containing all segments completely to the right of the 'mid'
 
-  private val cL = center.sortBy(_.range.ip1) // intervals overlapping the center sorted by their beginning ip
-  private val cR = center.sortBy(_.range.ip2).reverse // intervals overlapping the center sorted by their ending ip
+  private val cL = center.sortBy(_.range.ip1) // segments overlapping the 'mid' sorted by their beginning ip
+  private val cR = center.sortBy(_.range.ip2) // segments overlapping the 'mid' sorted by their ending ip
 
   override def segments(ip: IPAddress): Vector[Segment] = {
-
-    if (ip < mid) return cL.span(_.range.ip1 <= ip)._1.toVector ++ leftNode.segments(ip)
-    if (ip > mid) return cR.span(_.range.ip2 >= ip)._1.toVector ++ rightNode.segments(ip)
-
-    center
+    ip match {
+      case v if v < mid  => leftNode.segments(ip)  ++: cL.span(_.range.ip1 <= ip)._1
+      case v if v > mid  => rightNode.segments(ip) ++: cR.span(_.range.ip2 <  ip)._2
+      case v if v == mid => center
+    }
   }
 
   private def median(segments: Seq[Segment]): IPAddress = {
@@ -75,6 +75,6 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
 
 /** A segment node without elements. */
 private object SegmentNodeEmpty extends SegmentNode {
-  override def segments(ip: IPAddress): Seq[Segment] = Seq.empty
+  override def segments(ip: IPAddress): Vector[Segment] = Vector.empty
 }
 
