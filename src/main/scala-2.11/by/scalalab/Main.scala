@@ -104,14 +104,13 @@ object Main {
              defaultNW: String = "Unknown") = {
     // search tree
     val tree = SegmentTree(segments)
-    for {
-      action <- transactions
-    } yield {
-      val seq = tree.segments(action.ip)
+
+    transactions.par.map(action => {
+      val seq = tree.segments(action.ip)  // another way: segments.par.filter(_.range.contains(action.ip)).seq
       val res = if (seq.nonEmpty) seq.map(_.name).distinct.sorted else Seq(defaultNW)
 
       (action.userId, res)
-    }
+    }).seq
   }
 }
 

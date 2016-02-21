@@ -31,10 +31,6 @@ class SegmentTest extends FunSuite with BeforeAndAfter {
     }
   }
 
-  test("testCompareTo") {
-    assert(Segment(range1, "Name1") < Segment(range2, "Name1"))
-  }
-
   test("testToString") {
     assertResult("51.46.13.75-62.152.255.94\tName1") {
       Segment(range2, "Name1").toString

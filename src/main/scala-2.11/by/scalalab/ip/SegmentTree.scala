@@ -2,6 +2,7 @@ package by.scalalab.ip
 
 /**
   * An interval tree which contains the network segments.
+  * @see https://en.wikipedia.org/wiki/Interval_tree
   */
 object SegmentTree {
 
@@ -25,6 +26,7 @@ trait SegmentNode {
 
   /**
     * Find all segments overlapping with any IP address.
+    *
     * @param ip a IP address
     * @return sequence of segments overlapping with a given ''ip''.
     */
@@ -33,41 +35,40 @@ trait SegmentNode {
 
 /**
   * A segment node of tree with elements.
+  *
   * @param segments any non empty sequence of segments
   */
 private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
-  import scala.collection.SortedSet
 
   private val mid = median(segments)
 
-  private var center = SortedSet[Segment]()
-  private var (left, right) = Seq[Segment]() -> Seq[Segment]()
+  private var (left, center, right) = (Vector[Segment](), Vector[Segment](), Vector[Segment]())
 
   // dividing all the 'segments' in half at 'mid'
   // 'center' overlapping 'mid'
-  for (s <- segments; r = s.range) {
-    if (r.ip2 < mid) left +:= s
-    else if (r.ip1 > mid) right +:= s
-    else center += s
-  }
+  segments.par.foreach(s => {
+    if (s.range.ip2 < mid) left.synchronized(left +:= s)
+    else if (s.range.ip1 > mid) right.synchronized(right +:= s)
+    else center.synchronized(center +:= s)
+  })
 
-  // recursively create leafs
-  lazy val leftNode = SegmentTree(left)
-  lazy val rightNode = SegmentTree(right)
+  val leftNode = SegmentTree(left) // node containing all intervals completely to the left of the center
+  val rightNode = SegmentTree(right) // node containing all intervals completely to the right of the center point
 
-  override def segments(ip: IPAddress): Seq[Segment] = {
-    // all segments from the beginning of the sorted set to ip
-    var res = center.span(_.range.contains(ip))._1.toVector
+  private val cL = center.sortBy(_.range.ip1) // intervals overlapping the center sorted by their beginning ip
+  private val cR = center.sortBy(_.range.ip2).reverse // intervals overlapping the center sorted by their ending ip
 
-    if (ip < mid) res ++:= leftNode.segments(ip)
-    if (ip > mid) res ++:= rightNode.segments(ip)
+  override def segments(ip: IPAddress): Vector[Segment] = {
 
-    res
+    if (ip < mid) return cL.span(_.range.ip1 <= ip)._1.toVector ++ leftNode.segments(ip)
+    if (ip > mid) return cR.span(_.range.ip2 >= ip)._1.toVector ++ rightNode.segments(ip)
+
+    center
   }
 
   private def median(segments: Seq[Segment]): IPAddress = {
-    val r = segments.map(_.range).sorted.splitAt(segments.size / 2)._2.headOption
-    val m = for {range <- r} yield range.ip1
+    val ms = segments.sorted.splitAt(segments.size / 2)._2.headOption
+    val m = for {s <- ms} yield s.range.ip1
     m getOrElse IPAddress(0, 0, 0, 0)
   }
 }

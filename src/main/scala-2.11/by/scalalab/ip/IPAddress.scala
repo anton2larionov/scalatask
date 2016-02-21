@@ -11,8 +11,7 @@ case class IPAddress(v1: Int, v2: Int, v3: Int, v4: Int) extends Ordered[IPAddre
     s"Malformed IP address: $v1.$v2.$v3.$v4")
 
   /** Convert IP address to [[Long]] */
-  val toLong: Long = List(v4, v3, v2, v1)
-    .zipWithIndex.foldLeft(0L)((acc, pair) =>
+  val toLong: Long = List(v4, v3, v2, v1).zipWithIndex.foldLeft(0L)((acc, pair) =>
     acc + pair._1 * Math.pow(256, pair._2).toLong)
 
   override def compare(that: IPAddress): Int = toLong compare that.toLong
@@ -44,7 +43,7 @@ case class IPAddressRange(ip1: IPAddress,
     */
   def contains(ip: IPAddress): Boolean = ip >= this.ip1 && ip <= this.ip2
 
-  override def compare(that: IPAddressRange): Int = ip1 compare that.ip1
+  override def compare(that: IPAddressRange): Int = (ip1, ip2) compare (that.ip1, that.ip2)
 
   /**
     * @example 26.65.125.125-26.65.126.47

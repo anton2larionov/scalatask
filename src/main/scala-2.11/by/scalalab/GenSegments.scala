@@ -1,6 +1,7 @@
 package by.scalalab
 
-import by.scalalab.ip.{Segment, IPAddressRange, IPAddress}
+import by.scalalab.ip.{IPAddress, IPAddressRange, Segment}
+
 import scala.util.Random
 
 /**
@@ -16,8 +17,8 @@ object GenSegments {
   def get(totalSegments: Int, countRanges: Int): Seq[Segment] = {
     val random = Random
 
-    def num = random.nextInt(32)
-    def num2 = 32 + num
+    def num = random.nextInt(128)
+    def num2 = 64 + num
 
     def name = s"Network${random.nextInt(totalSegments)}"
 

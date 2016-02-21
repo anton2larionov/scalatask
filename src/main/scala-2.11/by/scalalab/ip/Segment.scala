@@ -2,7 +2,7 @@ package by.scalalab.ip
 
 /**
   * A network segment.
-  * Comparable by first element of the IP-address ranges.
+  * Comparable by IP-address ranges.
   *
   * @param range a range of IP addresses
   * @param name the segment's name

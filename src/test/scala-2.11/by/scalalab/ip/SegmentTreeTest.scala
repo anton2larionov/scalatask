@@ -3,6 +3,8 @@ package by.scalalab.ip
 import by.scalalab.GenSegments
 import org.scalatest.FunSuite
 
+import scala.util.Random
+
 /**
   * Tests of [[by.scalalab.ip.SegmentTree]].
   */
@@ -15,20 +17,19 @@ class SegmentTreeTest extends FunSuite {
 
   test("testSegmentsWithGen") {
 
-    val segments = GenSegments.get(1000, 100000)
-    val ip = IPAddress(64, 0, 0, 1)
+    def num1 = Random.nextInt(255)
 
+    val segments = GenSegments.get(1000, 100000)
     val tree = SegmentTree(segments)
+
+    val ip = IPAddress(num1, num1, num1, num1)
 
     val seqTree = tree.segments(ip).map(_.name).distinct
     val seqPar = segments.par.filter(_.range.contains(ip)).map(_.name).distinct.seq
 
     assert(seqPar.size == seqTree.size)
 
-    for {
-      name <- seqTree
-    } assert(seqPar.contains(name))
-
+    for { name <- seqTree } assert(seqPar.contains(name))
   }
 
   test("testSegments") {
