@@ -39,17 +39,17 @@ trait SegmentNode {
   * @param segments any non empty sequence of segments
   */
 private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
-
+  import scala.collection.mutable.ArrayBuffer
   private val mid = median(segments)
 
-  private var (left, center, right) = (Vector[Segment](), Vector[Segment](), Vector[Segment]())
+  private val (left, center, right) = (ArrayBuffer[Segment](), ArrayBuffer[Segment](), ArrayBuffer[Segment]())
 
   // dividing all the 'segments' in half at 'mid'
   // 'center' overlapping 'mid'
   for(s <- segments) {
-    if (s.range.ip2 < mid) left +:= s
-    else if (s.range.ip1 > mid) right +:= s
-    else center +:= s
+    if (s.range.ip2 < mid) left += s
+    else if (s.range.ip1 > mid) right += s
+    else center += s
   }
 
   val leftNode = SegmentTree(left)   // node containing all segments completely to the left of the 'mid'
@@ -58,10 +58,10 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
   private val cL = center.sortBy(_.range.ip1) // segments overlapping the 'mid' sorted by their beginning ip
   private val cR = center.sortBy(_.range.ip2) // segments overlapping the 'mid' sorted by their ending ip
 
-  override def segments(ip: IPAddress): Vector[Segment] = {
+  override def segments(ip: IPAddress): ArrayBuffer[Segment] = {
     ip match {
-      case v if v < mid  => leftNode.segments(ip)  ++: cL.span(_.range.ip1 <= ip)._1
-      case v if v > mid  => rightNode.segments(ip) ++: cR.span(_.range.ip2 <  ip)._2
+      case v if v <  mid => cL.span(_.range.ip1 <= ip)._1 ++ leftNode.segments(ip)
+      case v if v >  mid => cR.span(_.range.ip2 <  ip)._2 ++ rightNode.segments(ip)
       case v if v == mid => center
     }
   }
@@ -75,6 +75,7 @@ private class SegmentNodeImpl(val segments: Seq[Segment]) extends SegmentNode {
 
 /** A segment node without elements. */
 private object SegmentNodeEmpty extends SegmentNode {
-  override def segments(ip: IPAddress): Vector[Segment] = Vector.empty
+  import scala.collection.mutable.ArrayBuffer
+  override def segments(ip: IPAddress): ArrayBuffer[Segment] = ArrayBuffer.empty
 }
 
