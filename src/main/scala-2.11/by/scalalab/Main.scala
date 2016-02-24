@@ -5,7 +5,7 @@ import java.nio.file.{Files, Paths}
 import by.scalalab.ip._
 
 import scala.io.Source
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 /**
   * @author Larionov A.
@@ -14,7 +14,7 @@ object Main {
 
   def main(args: Array[String]) {
 
-    // lazy IO
+    // IO stream
     val lines: Source => Stream[String] = source =>
       source.getLines.toStream append {
         source.close; Stream.empty[String]
@@ -52,10 +52,9 @@ object Main {
     }
 
     // errors
-    val last = List(segmentsTry, transactionsTry, writerTry).distinct
-      .filter(_.isFailure) match {
-      case Nil => List("Program successfully finished without errors.")
-      case list => List("Program finished with errors:") ::: list.map(_.toString)
+    val last = writerTry match {
+      case Success(_) => List("Program has successfully finished without errors.")
+      case Failure(e) => List("Program has finished with error:", e)
     }
 
     last.foreach(println)
@@ -106,7 +105,8 @@ object Main {
     val tree = SegmentTree(segments)
 
     transactions.par.map(action => {
-      val seq = tree.segments(action.ip)  // another way: segments.par.filter(_.range.contains(action.ip)).seq
+      // another way: val seq = segments.par.filter(_.range.contains(action.ip)).seq
+      val seq = tree.segments(action.ip)
       val res = if (seq.nonEmpty) seq.map(_.name).distinct.sorted else Seq(defaultNW)
 
       (action.userId, res)

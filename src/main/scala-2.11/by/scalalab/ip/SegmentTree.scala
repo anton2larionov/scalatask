@@ -22,7 +22,7 @@ object SegmentTree {
 /**
   * A node of the interval tree.
   */
-trait SegmentNode {
+sealed trait SegmentNode {
 
   /**
     * Find all segments overlapping with any IP address.
