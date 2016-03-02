@@ -16,12 +16,12 @@ class SegmentTreeTest extends FunSuite {
 
   test("testSegmentsWithGen") {
 
-    val num = Random.nextInt(255)
+    val num = () => Random.nextInt(256)
     val segments = GenSegments.get(1000, 10000)
     val tree = SegmentTree(segments)
 
     for {c1 <- 0 to 255} {
-      val ip = IPAddress(c1, num, num, num)
+      val ip = IPAddress(c1, num(), num(), num())
 
       val seqTree = tree.segments(ip).map(_.name).distinct
       val seqPar = segments.par.filter(_.range.contains(ip)).seq.map(_.name).distinct

@@ -31,7 +31,7 @@ object Main {
     val transactionsTry = for { stream <- transactionsIO }
       yield mkTransactions(stream)
 
-    // generate required information (user Id -> seq of segment's name)
+    // gathering required information: (user Id -> seq of segment's name)
     val dataTry = for {
       segments <- segmentsTry
       transactions <- transactionsTry
@@ -60,17 +60,11 @@ object Main {
     last.foreach(println)
   }
 
-  /** Creates an [[by.scalalab.ip.IPAddress]] from any [[String]]. */
-  def mkIPAddress(str: String): Try[IPAddress] = {
+  private val ipRegex = """^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$""".r
 
-    val ipRegex = """^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$""".r
-
-    def parse(str: String) = str match {
-      case ipRegex(v1, v2, v3, v4) => Try(IPAddress(v1.toInt, v2.toInt, v3.toInt, v4.toInt))
-      case s => Failure(new IllegalArgumentException(s"Malformed IP address: $s"))
-    }
-
-    for {res <- parse(str)} yield res
+  def mkIPAddress(str: String): Try[IPAddress] = str match {
+    case ipRegex(v1, v2, v3, v4) => Try(IPAddress(v1.toInt, v2.toInt, v3.toInt, v4.toInt))
+    case s => Failure(new IllegalArgumentException(s"Malformed IP address: $s"))
   }
 
   def mkSegments(stream: Stream[String]): Seq[Segment] = {
@@ -100,14 +94,14 @@ object Main {
 
   def mkData(segments: Seq[Segment],
              transactions: Seq[Transaction],
-             defaultNW: String = "Unknown") = {
+             defaultName: String = "Unknown"): Seq[(Long, Seq[String])] = {
     // search tree
     val tree = SegmentTree(segments)
 
     transactions.par.map(action => {
-      // another way: val seq = segments.par.filter(_.range.contains(action.ip)).seq
+      // way w/o tree: val seq = segments.par.filter(_.range.contains(action.ip)).seq
       val seq = tree.segments(action.ip)
-      val res = if (seq.nonEmpty) seq.map(_.name).distinct.sorted else Seq(defaultNW)
+      val res = if (seq.nonEmpty) seq.map(_.name).distinct.sorted else Seq(defaultName)
 
       (action.userId, res)
     }).seq

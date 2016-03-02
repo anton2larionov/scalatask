@@ -15,15 +15,14 @@ object GenSegments {
     * @param countRanges the amount of ranges; any range can overlap with another range
     */
   def get(totalSegments: Int, countRanges: Int): Seq[Segment] = {
-    val random = Random
 
-    def num = random.nextInt(128)
-    def num2 = 64 + num
+    def num = Random.nextInt(256)
 
-    def name = s"Network${random.nextInt(totalSegments)}"
+    val total = if (totalSegments > 0) totalSegments else 1
+    def name = s"Network${Random.nextInt(total)}"
 
-    val segments = Range.inclusive(0, countRanges - 1).par.map { i =>
-      val (v1, v2) = IPAddress(num, num2, num, num2) -> IPAddress(num2, num, num2, num)
+    val segments = Range.inclusive(1, countRanges).par.map { i =>
+      val (v1, v2) = IPAddress(num, num, num, num) -> IPAddress(num, num, num, num)
       val (ip1, ip2) = if (v1 < v2) (v1, v2) else (v2, v1)
 
       Segment(IPAddressRange(ip1, ip2), name)
